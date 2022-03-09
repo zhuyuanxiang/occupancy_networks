@@ -1,6 +1,6 @@
 # Watertight and Simplified Meshes through TSDF Fusion
 
-This repository contains a simply Python pipeline for obtaining watertight
+[This repository](https://github.com/davidstutz/mesh-fusion) contains a simply Python pipeline for obtaining watertight
 and simplified meshes from arbitrary triangular meshes, given in `.off` format.
 The approach is largely based on adapted versions of Gernot Riegler's
 [pyrender](https://github.com/griegler/pyrender) and [pyfusion](https://github.com/griegler/pyfusion);
