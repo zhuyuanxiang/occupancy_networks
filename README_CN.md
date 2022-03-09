@@ -66,36 +66,34 @@ bash scripts/download_data.sh
 
 ### 构建数据集
 自己预处理数据集可以执行下面的步骤：
-* download the [ShapeNet dataset v1](https://www.shapenet.org/) and put into `data/external/ShapeNet`. 
-* download the [renderings and voxelizations](http://3d-r2n2.stanford.edu/) from Choy et al. 2016 and unpack them in `data/external/Choy2016` 
-* build our modified version of [mesh-fusion](https://github.com/davidstutz/mesh-fusion) by following the instructions in the `external/mesh-fusion` folder
+* 下载 [ShapeNet dataset v1](https://www.shapenet.org/) 保存在 `data/external/ShapeNet`
+* 从 Choy et al. 2016 下载 [renderings and voxelizations](http://3d-r2n2.stanford.edu/)  并且展开到 `data/external/Choy2016` 
+* 按照下述的指导在 `external/mesh-fusion` 文件夹中构建我们修改过的 [mesh-fusion](https://github.com/davidstutz/mesh-fusion)
 
-You are now ready to build the dataset:
+现在，构建数据集：
 ```
 cd scripts
 bash dataset_shapenet/build.sh
 ```
 
-This command will build the dataset in `data/ShapeNet.build`.
-To install the dataset, run
+这个命令将在文件夹 `data/ShapeNet.build` 构建数据集，执行下面的命令安装数据集：
 ```
 bash dataset_shapenet/install.sh
 ```
 
-If everything worked out, this will copy the dataset into `data/ShapeNet`.
+如果一切都这，数据集将会拷贝到文件夹 `data/ShapeNet`.
 
-## Usage
-When you have installed all binary dependencies and obtained the preprocessed data, you are ready to run our pretrained models and train new models from scratch.
+## 使用
+当你已经安装了所有的二进制依赖，也获取了预处理数据，则可以运行预训练模型，并且从头开始训练新的模型
 
-### Generation
-To generate meshes using a trained model, use
+### 生成
+为了使用训练好的模型生成网格可以执行下面的命令：
 ```
 python generate.py CONFIG.yaml
 ```
-where you replace `CONFIG.yaml` with the correct config file.
+可以使用其他正确的配置文件来替换 `CONFIG.yaml`
 
-The easiest way is to use a pretrained model.
-You can do this by using one of the config files
+最简单的方式是使用预训练模型。你可以下面的配置文件中的一个文件：
 ```
 configs/img/onet_pretrained.yaml
 configs/pointcloud/onet_pretrained.yaml
@@ -105,58 +103,51 @@ configs/unconditional/onet_airplanes_pretrained.yaml
 configs/unconditional/onet_sofas_pretrained.yaml
 configs/unconditional/onet_chairs_pretrained.yaml
 ```
-which correspond to the experiments presented in the paper.
-Our script will automatically download the model checkpoints and run the generation.
-You can find the outputs in the `out/*/*/pretrained` folders.
+结果对应着论文中的实验。我们的脚本将会自动下载模型的检查点，并且运行生成。输出在 `out/*/*/pretrained`  文件夹中
 
-Please note that the config files  `*_pretrained.yaml` are only for generation, not for training new models: when these configs are used for training, the model will be trained from scratch, but during inference our code will still use the pretrained model.
+请注意：配置文件`*_pretrained.yaml` 仅仅用于生成，而不能用于训练新的模型：当这些配置文件用于训练时，模型将会从头开始训练，但是当推理我们的代码时仍然使用预训练模型
 
-### Evaluation
-For evaluation of the models, we provide two scripts: `eval.py` and `eval_meshes.py`.
+### 评估
+对于模型的评估，我们提供两个脚本：`eval.py` 和 `eval_meshes.py`.
 
-The main evaluation script is `eval_meshes.py`.
-You can run it using
+主要评估脚本 `eval_meshes.py` 的运行方式：
+
 ```
 python eval_meshes.py CONFIG.yaml
 ```
-The script takes the meshes generated in the previous step and evaluates them using a standardized protocol.
-The output will be written to `.pkl`/`.csv` files in the corresponding generation folder which can be processed using [pandas](https://pandas.pydata.org/).
+脚本中在前一个步骤生成网格，然后使用一个标准的协议评估它们。使用 [pandas](https://pandas.pydata.org/) 处理并输出 `.pkl`/`.csv` 文件在对应的生成文件夹中。
 
-For a quick evaluation, you can also run
+对于一个快速评估，可以使用下面脚本：
 ```
 python eval.py CONFIG.yaml
 ```
-This script will run a fast method specific evaluation to obtain some basic quantities that can be easily computed without extracting the meshes.
-This evaluation will also be conducted automatically on the validation set during training.
+这个脚本运行特定评估的快速方式，从而获取一些基本的参量，这些参量不需要提取网格就可以方便地计算。这个评估在训练期间也可以在验证集上自动进行。
 
-All results reported in the paper were obtained using the `eval_meshes.py` script.
+论文中报告的所有结果都可以使用 `eval_meshes.py` 脚本获得
 
-### Training
-Finally, to train a new network from scratch, run
+### 训练
+最后，为了从头开始训练一个新的网络，执行：
 ```
 python train.py CONFIG.yaml
 ```
-where you replace `CONFIG.yaml` with the name of the configuration file you want to use.
+其中的 `CONFIG.yaml` 可以使用你想要使用的配置文件名称替换。
 
-You can monitor on <http://localhost:6006> the training process using [tensorboard](https://www.tensorflow.org/guide/summaries_and_tensorboard):
+你可以使用 [tensorboard](https://www.tensorflow.org/guide/summaries_and_tensorboard) 访问 <http://localhost:6006> 监视训练过程：
 ```
 cd OUTPUT_DIR
 tensorboard --logdir ./logs --port 6006
 ```
-where you replace `OUTPUT_DIR` with the respective output directory.
+可以使用不同的输入文件夹替换 `OUTPUT_DIR` 
 
-For available training options, please take a look at `configs/default.yaml`.
+对于有效的训练选择，可以参考`configs/default.yaml`.
 
-# Notes
-* In our paper we used random crops and scaling to augment the input images. 
-  However, we later found that this image augmentation decreases performance on the ShapeNet test set.
-  The pretrained model that is loaded in `configs/img/onet_pretrained.yaml` was hence trained without data augmentation and has slightly better performance than the model from the paper. The updated table looks a follows:
-  ![Updated table for single view 3D reconstruction experiment](img/table_img2mesh.png)
-  For completeness, we also provide the trained weights for the model which was used in the paper in  `configs/img/onet_legacy_pretrained.yaml`.
-* Note that training and evaluation of both our model and the baselines is performed with respect to the *watertight models*, but that normalization into the unit cube is performed with respect to the *non-watertight meshes* (to be consistent with the voxelizations from Choy et al.). As a result, the bounding box of the sampled point cloud is usually slightly bigger than the unit cube and may differ a little bit from a point cloud that was sampled from the original ShapeNet mesh.
+# 注释
+* 本文中使用随机剪裁和缩放来增强输入图像数据集。然而，这种图像数据集增强技术降低了 ShapeNet 测试集的性能。预训练模型使用 `configs/img/onet_pretrained.yaml` 载入，因此不需要数据集增强进行训练，并且相比论文中的模型拥有更好的性能。这个更新表如下：
+  ![Updated table for single view 3D reconstruction experiment](img/table_img2mesh.png)为了完整性，项目还为论文中使用的模型提供了训练后的权重 `configs/img/onet_legacy_pretrained.yaml`.
+* 请注意：本文模型和基线是在*水密模型*上完成训练与评估，但是归一化到单位立方体是在*非水密网格*（为了与 Choy et al. 中的体素化保持一致）上完成的。因此，采样点云的包围盒通常比单位立方体稍大一点，并且与原始的 ShapeNet 网格采样的点云稍有不同。
 
-# Futher Information
-Please also check out the following concurrent papers that have proposed similar ideas:
+# 进一步的信息
+请检查下述的同期论文，它们拥有相似的理念：
 * [Park et al. - DeepSDF: Learning Continuous Signed Distance Functions for Shape Representation (2019)](https://arxiv.org/abs/1901.05103)
 * [Chen et al. - Learning Implicit Fields for Generative Shape Modeling (2019)](https://arxiv.org/abs/1812.02822)
 * [Michalkiewicz et al. - Deep Level Sets: Implicit Surface Representations for 3D Shape Inference (2019)](https://arxiv.org/abs/1901.06802)
