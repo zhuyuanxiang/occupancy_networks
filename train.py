@@ -1,14 +1,18 @@
+import argparse
+import os
+import time
+
+import matplotlib
+import numpy as np
 import torch
 import torch.optim as optim
-from tensorboardX import SummaryWriter
-import numpy as np
-import os
-import argparse
-import time
-import matplotlib; matplotlib.use('Agg')
+# from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
+
 from im2mesh import config, data
 from im2mesh.checkpoints import CheckpointIO
 
+matplotlib.use('Agg')
 
 # Arguments
 parser = argparse.ArgumentParser(
@@ -60,7 +64,6 @@ val_loader = torch.utils.data.DataLoader(
     val_dataset, batch_size=10, num_workers=4, shuffle=False,
     collate_fn=data.collate_remove_none,
     worker_init_fn=data.worker_init_fn)
-
 
 # For visualizations
 vis_loader = torch.utils.data.DataLoader(
@@ -117,7 +120,7 @@ print('Total number of parameters: %d' % nparameters)
 
 while True:
     epoch_it += 1
-#     scheduler.step()
+    #     scheduler.step()
 
     for batch in train_loader:
         it += 1
